@@ -6,6 +6,14 @@ class PostCard extends StatelessWidget {
 
   const PostCard({super.key, required this.post});
 
+  String _getTimeAgo(DateTime dateTime) {
+    final difference = DateTime.now().difference(dateTime);
+    if (difference.inDays > 0) return '${difference.inDays}d';
+    if (difference.inHours > 0) return '${difference.inHours}h';
+    if (difference.inMinutes > 0) return '${difference.inMinutes}m';
+    return 'now';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -19,19 +27,15 @@ class PostCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF81BCA6), // Light greenish circle
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.explore_outlined, size: 18, color: Colors.black54),
+                CircleAvatar(
+                  radius: 16,
+                  backgroundImage: NetworkImage(post.userAvatar),
+                  backgroundColor: Colors.grey[800],
                 ),
                 const SizedBox(width: 8),
-                const Text(
-                  'r/bikepacking',
-                  style: TextStyle(
+                Text(
+                  post.username,
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                     color: Colors.white,
@@ -39,79 +43,68 @@ class PostCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  '• 5h',
-                  style: TextStyle(
+                  '• ${_getTimeAgo(post.createdAt)}',
+                  style: const TextStyle(
                     color: Colors.grey,
                     fontSize: 13,
                   ),
                 ),
                 const Spacer(),
-                // Join Button
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1456D3), // Bright blue
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Text(
-                    'Join',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                  ),
-                ),
-                const SizedBox(width: 4),
                 const Icon(Icons.more_vert, color: Colors.grey, size: 20),
               ],
             ),
           ),
           const SizedBox(height: 8),
           // Title
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Text(
-              'Just finished TransSardinia.',
-              style: TextStyle(
-                fontSize: 18, 
-                fontWeight: FontWeight.bold,
+              post.title,
+              style: const TextStyle(
+                fontSize: 16, 
+                fontWeight: FontWeight.w600,
                 color: Colors.white,
                 height: 1.3,
               ),
             ),
           ),
+          if (post.linkText != null) ...[
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                post.linkText!,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF7C5CFF),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 8),
-          // Image placeholder with dots
-          Stack(
-            alignment: Alignment.bottomCenter,
-            children: [
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12), // Small side margins for rounded image
-                width: double.infinity,
-                height: 350,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+          // Image
+          if (post.imageUrl != null)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 12),
+              width: double.infinity,
+              constraints: const BoxConstraints(
+                maxHeight: 400,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.grey[900],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Image.network(
+                post.imageUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  height: 200,
+                  color: Colors.grey[900],
+                  child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
                 ),
               ),
-              // Pagination dots
-              Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(width: 5, height: 5, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                    const SizedBox(width: 4),
-                    Container(width: 5, height: 5, decoration: const BoxDecoration(color: Colors.white54, shape: BoxShape.circle)),
-                    const SizedBox(width: 4),
-                    Container(width: 5, height: 5, decoration: const BoxDecoration(color: Colors.white54, shape: BoxShape.circle)),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
           const SizedBox(height: 12),
           // Interaction Bar
           Padding(
@@ -130,7 +123,10 @@ class PostCard extends StatelessWidget {
                     children: [
                       const Icon(Icons.arrow_upward, size: 18, color: Colors.white),
                       const SizedBox(width: 4),
-                      const Text('214', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                      Text(
+                        post.upvotes.toString(),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
                       const SizedBox(width: 10),
                       Container(
                         width: 1,
@@ -155,7 +151,10 @@ class PostCard extends StatelessWidget {
                     children: [
                       const Icon(Icons.chat_bubble_outline, size: 18, color: Colors.white),
                       const SizedBox(width: 6),
-                      const Text('6', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                      Text(
+                        post.commentCount.toString(),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
                     ],
                   ),
                 ),
@@ -172,7 +171,10 @@ class PostCard extends StatelessWidget {
                     children: [
                       const Icon(Icons.shortcut, size: 20, color: Colors.white),
                       const SizedBox(width: 4),
-                      const Text('14', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                      Text(
+                        post.shareCount.toString(),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
                     ],
                   ),
                 ),

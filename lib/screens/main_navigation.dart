@@ -19,7 +19,6 @@ class _MainNavigationState extends State<MainNavigation> {
 
   final List<Widget> _screens = [
     const HomeFeedScreen(),
-    const AddPostScreen(),
     const NotificationScreen(),
     const ProfileScreen(),
   ];
@@ -94,21 +93,26 @@ class _MainNavigationState extends State<MainNavigation> {
                       _NavBarIcon(
                         icon: Icons.add,
                         activeIcon: Icons.add,
-                        isActive: _selectedIndex == 1,
-                        onTap: () => _onItemTapped(1),
+                        isActive: false, // Pushes a new screen, so it doesn't stay active
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AddPostScreen()),
+                          );
+                        },
                       ),
                       _NavBarIcon(
                         icon: Icons.mail_outline, // Inbox
                         activeIcon: Icons.mail,
-                        isActive: _selectedIndex == 2,
+                        isActive: _selectedIndex == 1,
                         hasBadge: true,
-                        onTap: () => _onItemTapped(2),
+                        onTap: () => _onItemTapped(1),
                       ),
                       _NavBarIcon(
                         icon: Icons.person_outline,
                         activeIcon: Icons.person,
-                        isActive: _selectedIndex == 3,
-                        onTap: () => _onItemTapped(3),
+                        isActive: _selectedIndex == 2,
+                        onTap: () => _onItemTapped(2),
                       ),
                     ],
                   ),
@@ -150,7 +154,7 @@ class _NavBarIcon extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             child: Icon(
               isActive ? activeIcon : icon,
-              color: isActive ? Colors.white : Colors.white54,
+              color: isActive ? const Color(0xFF7C5CFF) : Colors.white54,
               size: 28,
             ),
           ),
@@ -162,7 +166,7 @@ class _NavBarIcon extends StatelessWidget {
                 width: 10,
                 height: 10,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF4500), // Reddit Orange/Red badge
+                  color: const Color(0xFF7C5CFF), // Premium purple-indigo badge
                   shape: BoxShape.circle,
                   border: Border.all(color: const Color(0xFF1E1E1E), width: 2), // Cutout effect
                 ),

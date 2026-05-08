@@ -21,8 +21,14 @@ class MemoriaApp extends StatelessWidget {
           elevation: 0,
         ),
         colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF7C5CFF),
+          secondary: Color(0xFF7C5CFF),
           surface: Color(0xFF0F0F0F),
-          background: Color(0xFF0F0F0F),
+        ),
+        textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: Color(0xFF7C5CFF),
+          selectionHandleColor: Color(0xFF7C5CFF),
+          selectionColor: Color(0x4D7C5CFF), // 30% opacity
         ),
         fontFamily: 'Roboto', // Similar to Android's default
       ),

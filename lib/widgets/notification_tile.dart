@@ -13,7 +13,7 @@ class NotificationTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       decoration: BoxDecoration(
         color: notification.isNew
-            ? Colors.deepPurpleAccent.withOpacity(0.05)
+            ? const Color(0xFF7C5CFF).withOpacity(0.08)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
