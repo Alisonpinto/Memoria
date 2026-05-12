@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/post.dart';
 import '../widgets/post_card.dart';
+import '../services/mock_data_service.dart';
 
 class HomeFeedScreen extends StatelessWidget {
   const HomeFeedScreen({super.key});
@@ -55,17 +56,18 @@ class HomeFeedScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: ListView.separated(
-        padding: EdgeInsets.zero,
-        itemCount: dummyPosts.length,
-        separatorBuilder: (context, index) => const Divider(
-          color: Colors.white12,
-          thickness: 1,
-          height: 1,
-        ),
-        itemBuilder: (context, index) {
-          final post = dummyPosts[index];
-          return PostCard(post: post);
+      body: ListenableBuilder(
+        listenable: MockDataService(),
+        builder: (context, child) {
+          final posts = MockDataService().posts;
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: posts.length,
+            itemBuilder: (context, index) {
+              final post = posts[index];
+              return PostCard(post: post);
+            },
+          );
         },
       ),
     );

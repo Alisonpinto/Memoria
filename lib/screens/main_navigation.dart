@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'home_feed_screen.dart';
 import 'add_post_screen.dart';
 import 'notification_screen.dart';
@@ -16,10 +17,11 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
   bool _isBottomNavVisible = true;
+  DateTime? _lastPressedAt;
 
-  final List<Widget> _screens = [
+  List<Widget> get _screens => [
     const HomeFeedScreen(),
-    const NotificationScreen(),
+    NotificationScreen(onBack: () => _onItemTapped(0)),
     const ProfileScreen(),
   ];
 
@@ -46,80 +48,112 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
-      drawer: const SidebarDrawer(),
-      body: NotificationListener<ScrollNotification>(
-        onNotification: _handleScrollNotification,
-        child: Stack(
-          children: [
-            IndexedStack(
-              index: _selectedIndex,
-              children: _screens,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+
+        // 1. If not on home tab, navigate back to home tab first
+        if (_selectedIndex != 0) {
+          _onItemTapped(0);
+          return;
+        }
+
+        // 2. Ask user to press back once more to exit
+        final now = DateTime.now();
+        if (_lastPressedAt == null || now.difference(_lastPressedAt!) > const Duration(seconds: 2)) {
+          _lastPressedAt = now;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Press back again to exit', style: TextStyle(color: Colors.white)),
+              duration: Duration(seconds: 2),
+              backgroundColor: Color(0xFF1E1E1E),
             ),
-            // Floating Animated Bottom Navigation Bar
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: AnimatedSlide(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic,
-                offset: _isBottomNavVisible ? Offset.zero : const Offset(0, 1),
-                child: Container(
-                  padding: EdgeInsets.only(
-                    top: 12, 
-                    bottom: MediaQuery.of(context).padding.bottom > 0 ? MediaQuery.of(context).padding.bottom : 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E1E1E), // Dark grey container
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
-                        blurRadius: 20,
-                        offset: const Offset(0, -5),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _NavBarIcon(
-                        icon: Icons.home_outlined,
-                        activeIcon: Icons.home_filled,
-                        isActive: _selectedIndex == 0,
-                        onTap: () => _onItemTapped(0),
-                      ),
-                      _NavBarIcon(
-                        icon: Icons.add,
-                        activeIcon: Icons.add,
-                        isActive: false, // Pushes a new screen, so it doesn't stay active
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const AddPostScreen()),
-                          );
-                        },
-                      ),
-                      _NavBarIcon(
-                        icon: Icons.mail_outline, // Inbox
-                        activeIcon: Icons.mail,
-                        isActive: _selectedIndex == 1,
-                        hasBadge: true,
-                        onTap: () => _onItemTapped(1),
-                      ),
-                      _NavBarIcon(
-                        icon: Icons.person_outline,
-                        activeIcon: Icons.person,
-                        isActive: _selectedIndex == 2,
-                        onTap: () => _onItemTapped(2),
-                      ),
-                    ],
+          );
+          return;
+        }
+
+        // 3. Exit app
+        await SystemNavigator.pop();
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0F0F0F),
+        drawer: SidebarDrawer(
+          currentNavIndex: _selectedIndex,
+          onNavigateToBottomNav: _onItemTapped,
+        ),
+        body: NotificationListener<ScrollNotification>(
+          onNotification: _handleScrollNotification,
+          child: Stack(
+            children: [
+              IndexedStack(
+                index: _selectedIndex,
+                children: _screens,
+              ),
+              // Floating Animated Bottom Navigation Bar
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: AnimatedSlide(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  offset: _isBottomNavVisible ? Offset.zero : const Offset(0, 1),
+                  child: Container(
+                    padding: EdgeInsets.only(
+                      top: 12, 
+                      bottom: MediaQuery.of(context).padding.bottom > 0 ? MediaQuery.of(context).padding.bottom : 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E1E1E), // Dark grey container
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 20,
+                          offset: const Offset(0, -5),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _NavBarIcon(
+                          icon: Icons.home_outlined,
+                          activeIcon: Icons.home_filled,
+                          isActive: _selectedIndex == 0,
+                          onTap: () => _onItemTapped(0),
+                        ),
+                        _NavBarIcon(
+                          icon: Icons.add,
+                          activeIcon: Icons.add,
+                          isActive: false, // Pushes a new screen, so it doesn't stay active
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const AddPostScreen()),
+                            );
+                          },
+                        ),
+                        _NavBarIcon(
+                          icon: Icons.mail_outline, // Inbox
+                          activeIcon: Icons.mail,
+                          isActive: _selectedIndex == 1,
+                          hasBadge: true,
+                          onTap: () => _onItemTapped(1),
+                        ),
+                        _NavBarIcon(
+                          icon: Icons.person_outline,
+                          activeIcon: Icons.person,
+                          isActive: _selectedIndex == 2,
+                          onTap: () => _onItemTapped(2),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

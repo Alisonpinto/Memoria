@@ -1,123 +1,197 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
+import '../services/mock_data_service.dart';
+import '../widgets/post_card.dart';
+import 'settings_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            // Profile Info
-            CircleAvatar(
-              radius: 60,
-              backgroundImage: NetworkImage(currentUser.avatarUrl),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              currentUser.username,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              currentUser.joinDate,
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 24),
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
 
-            // Stats Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _StatItem(label: 'Posts', value: '0'),
-                _StatItem(label: 'Followers', value: '842'),
-                _StatItem(label: 'Likes', value: '12.5k'),
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: MockDataService(),
+      builder: (context, _) {
+        final user = MockDataService().user;
+        final userPosts = MockDataService().userPosts;
+        final savedPosts = MockDataService().savedPosts;
+
+        return DefaultTabController(
+          length: 3,
+          child: Scaffold(
+            backgroundColor: const Color(0xFF0F0F0F),
+            appBar: AppBar(
+              backgroundColor: const Color(0xFF0F0F0F),
+              elevation: 0,
+              title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.settings_outlined, color: Colors.white),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+                  },
+                ),
               ],
             ),
-            const SizedBox(height: 32),
+            body: NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  SliverToBoxAdapter(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        // Profile Info
+                        Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 50,
+                              backgroundImage: NetworkImage(user.avatarUrl),
+                              backgroundColor: Colors.grey[800],
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Edit Profile opened (Mock)')),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF7C5CFF),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: const Color(0xFF0F0F0F), width: 3),
+                                  ),
+                                  child: const Icon(
+                                    Icons.edit,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          user.username,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          user.joinDate,
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
 
-            // Edit Profile Button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.surface,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                        // Stats Row
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _StatItem(label: 'Posts', value: userPosts.length.toString()),
+                            const _StatItem(label: 'Followers', value: '842'),
+                            const _StatItem(label: 'Likes', value: '12.5k'),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+
+                        const SizedBox(height: 10),
+                      ],
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('Edit Profile'),
-                ),
-              ),
-            ),
-            const SizedBox(height: 40),
-
-            // Content Tabs
-            const Divider(color: Colors.white12, height: 1),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _SliverAppBarDelegate(
+                      const TabBar(
+                        indicatorColor: Color(0xFF7C5CFF),
+                        labelColor: Colors.white,
+                        unselectedLabelColor: Colors.white54,
+                        tabs: [
+                          Tab(icon: Icon(Icons.grid_on)),
+                          Tab(icon: Icon(Icons.bookmark_outline)),
+                          Tab(icon: Icon(Icons.person_pin_outlined)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ];
+              },
+              body: TabBarView(
                 children: [
-                  Icon(Icons.grid_on, color: Colors.white),
-                  Icon(Icons.bookmark_outline, color: Colors.grey),
-                  Icon(Icons.person_pin_outlined, color: Colors.grey),
+                  _buildPostList(userPosts, "No posts yet", "When you share photos, they will appear here.", Icons.camera_alt_outlined),
+                  _buildPostList(savedPosts, "No saved posts", "Saved posts will appear here.", Icons.bookmark_border),
+                  _buildEmptyState("No tagged posts", "When people tag you, it will show up here.", Icons.person_pin_outlined),
                 ],
               ),
             ),
-
-            // Placeholder for posts
-            const SizedBox(height: 60),
-            const Icon(
-              Icons.camera_alt_outlined,
-              size: 64,
-              color: Colors.white24,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'No posts yet',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white54,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'When you share photos, they will appear here.',
-              style: TextStyle(color: Colors.white38),
-            ),
-
-            // Grid Layout (Future-ready)
-            // GridView.builder(...) would go here
-            const SizedBox(height: 100),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
+  }
+
+  Widget _buildPostList(List posts, String emptyTitle, String emptySubtitle, IconData emptyIcon) {
+    if (posts.isEmpty) {
+      return _buildEmptyState(emptyTitle, emptySubtitle, emptyIcon);
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemCount: posts.length,
+      itemBuilder: (context, index) {
+        return PostCard(post: posts[index]);
+      },
+    );
+  }
+
+  Widget _buildEmptyState(String title, String subtitle, IconData icon) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, size: 64, color: Colors.white24),
+        const SizedBox(height: 16),
+        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white54)),
+        const SizedBox(height: 8),
+        Text(subtitle, style: const TextStyle(color: Colors.white38)),
+      ],
+    );
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _SliverAppBarDelegate(this._tabBar);
+
+  final TabBar _tabBar;
+
+  @override
+  double get minExtent => _tabBar.preferredSize.height;
+  @override
+  double get maxExtent => _tabBar.preferredSize.height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: const Color(0xFF0F0F0F),
+      child: _tabBar,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return false;
   }
 }
 
@@ -131,20 +205,9 @@ class _StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.grey[500],
-            fontSize: 14,
-          ),
-        ),
+        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 13)),
       ],
     );
   }

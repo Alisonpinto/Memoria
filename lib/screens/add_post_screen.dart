@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/mock_data_service.dart';
 
 class AddPostScreen extends StatefulWidget {
   const AddPostScreen({super.key});
@@ -34,17 +35,24 @@ class _AddPostScreenState extends State<AddPostScreen> {
   void _handlePost() {
     if (!_hasText && !_hasImage && !_hasVideo) return;
     
+    List<String> images = [];
+    if (_hasImage) {
+      images.add('https://images.unsplash.com/photo-1617042375876-a13e36732a92?q=80&w=800');
+    }
+    
+    MockDataService().addPost(
+      "New Post", 
+      "General", 
+      _textController.text.trim(), 
+      images
+    );
+    
     // Simulate posting
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Post submitted successfully!')),
     );
     
-    // Reset state
-    _textController.clear();
-    setState(() {
-      _hasImage = false;
-      _hasVideo = false;
-    });
+    Navigator.pop(context); // Go back after posting
   }
 
   void _toggleImage() {
