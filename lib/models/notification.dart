@@ -3,7 +3,7 @@ class NotificationModel {
   final String avatarUrl;
   final String action;
   final DateTime timestamp;
-  final bool isNew;
+  bool isNew;
 
   NotificationModel({
     required this.username,

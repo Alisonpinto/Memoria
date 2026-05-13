@@ -6,6 +6,7 @@ import 'add_post_screen.dart';
 import 'notification_screen.dart';
 import 'profile_screen.dart';
 import '../widgets/sidebar_drawer.dart';
+import '../services/theme_service.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -76,85 +77,91 @@ class _MainNavigationState extends State<MainNavigation> {
         // 3. Exit app
         await SystemNavigator.pop();
       },
-      child: Scaffold(
-        backgroundColor: const Color(0xFF0F0F0F),
-        drawer: SidebarDrawer(
-          currentNavIndex: _selectedIndex,
-          onNavigateToBottomNav: _onItemTapped,
-        ),
-        body: NotificationListener<ScrollNotification>(
-          onNotification: _handleScrollNotification,
-          child: Stack(
-            children: [
-              IndexedStack(
-                index: _selectedIndex,
-                children: _screens,
-              ),
-              // Floating Animated Bottom Navigation Bar
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: AnimatedSlide(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOutCubic,
-                  offset: _isBottomNavVisible ? Offset.zero : const Offset(0, 1),
-                  child: Container(
-                    padding: EdgeInsets.only(
-                      top: 12, 
-                      bottom: MediaQuery.of(context).padding.bottom > 0 ? MediaQuery.of(context).padding.bottom : 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E1E1E), // Dark grey container
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.5),
-                          blurRadius: 20,
-                          offset: const Offset(0, -5),
+      child: ListenableBuilder(
+        listenable: ThemeService(),
+        builder: (context, _) {
+          final isDark = ThemeService().isDarkMode;
+          return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            drawer: SidebarDrawer(
+              currentNavIndex: _selectedIndex,
+              onNavigateToBottomNav: _onItemTapped,
+            ),
+            body: NotificationListener<ScrollNotification>(
+              onNotification: _handleScrollNotification,
+              child: Stack(
+                children: [
+                  IndexedStack(
+                    index: _selectedIndex,
+                    children: _screens,
+                  ),
+                  // Floating Animated Bottom Navigation Bar
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: AnimatedSlide(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic,
+                      offset: _isBottomNavVisible ? Offset.zero : const Offset(0, 1),
+                      child: Container(
+                        padding: EdgeInsets.only(
+                          top: 12, 
+                          bottom: MediaQuery.of(context).padding.bottom > 0 ? MediaQuery.of(context).padding.bottom : 12,
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _NavBarIcon(
-                          icon: Icons.home_outlined,
-                          activeIcon: Icons.home_filled,
-                          isActive: _selectedIndex == 0,
-                          onTap: () => _onItemTapped(0),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(isDark ? 0.5 : 0.08),
+                              blurRadius: 20,
+                              offset: const Offset(0, -5),
+                            ),
+                          ],
                         ),
-                        _NavBarIcon(
-                          icon: Icons.add,
-                          activeIcon: Icons.add,
-                          isActive: false, // Pushes a new screen, so it doesn't stay active
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const AddPostScreen()),
-                            );
-                          },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _NavBarIcon(
+                              icon: Icons.home_outlined,
+                              activeIcon: Icons.home_filled,
+                              isActive: _selectedIndex == 0,
+                              onTap: () => _onItemTapped(0),
+                            ),
+                            _NavBarIcon(
+                              icon: Icons.add,
+                              activeIcon: Icons.add,
+                              isActive: false, // Pushes a new screen, so it doesn't stay active
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const AddPostScreen()),
+                                );
+                              },
+                            ),
+                            _NavBarIcon(
+                              icon: Icons.mail_outline, // Inbox
+                              activeIcon: Icons.mail,
+                              isActive: _selectedIndex == 1,
+                              hasBadge: true,
+                              onTap: () => _onItemTapped(1),
+                            ),
+                            _NavBarIcon(
+                              icon: Icons.person_outline,
+                              activeIcon: Icons.person,
+                              isActive: _selectedIndex == 2,
+                              onTap: () => _onItemTapped(2),
+                            ),
+                          ],
                         ),
-                        _NavBarIcon(
-                          icon: Icons.mail_outline, // Inbox
-                          activeIcon: Icons.mail,
-                          isActive: _selectedIndex == 1,
-                          hasBadge: true,
-                          onTap: () => _onItemTapped(1),
-                        ),
-                        _NavBarIcon(
-                          icon: Icons.person_outline,
-                          activeIcon: Icons.person,
-                          isActive: _selectedIndex == 2,
-                          onTap: () => _onItemTapped(2),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -177,6 +184,7 @@ class _NavBarIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = ThemeService().isDarkMode;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -188,7 +196,7 @@ class _NavBarIcon extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             child: Icon(
               isActive ? activeIcon : icon,
-              color: isActive ? const Color(0xFF7C5CFF) : Colors.white54,
+              color: isActive ? const Color(0xFF997DFF) : (isDark ? Colors.white54 : Colors.black54),
               size: 28,
             ),
           ),
@@ -200,9 +208,9 @@ class _NavBarIcon extends StatelessWidget {
                 width: 10,
                 height: 10,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF7C5CFF), // Premium purple-indigo badge
+                  color: const Color(0xFF997DFF), // Premium purple-indigo badge
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF1E1E1E), width: 2), // Cutout effect
+                  border: Border.all(color: isDark ? const Color(0xFF1E1E1E) : Colors.white, width: 2), // Cutout effect
                 ),
               ),
             ),

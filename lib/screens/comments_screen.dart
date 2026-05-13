@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/post.dart';
 import '../models/comment.dart';
 import '../services/mock_data_service.dart';
+import '../services/theme_service.dart';
 
 class CommentsScreen extends StatefulWidget {
   final Post post;
@@ -38,9 +39,11 @@ class _CommentsScreenState extends State<CommentsScreen> {
       'https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=300', // fluid art
     ];
 
+    final isDark = ThemeService().isDarkMode;
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF141414),
+      backgroundColor: isDark ? const Color(0xFF141414) : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -55,16 +58,16 @@ class _CommentsScreenState extends State<CommentsScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Select Image from Gallery',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: isDark ? Colors.white : const Color(0xFF1A1D20),
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white54),
+                      icon: Icon(Icons.close, color: isDark ? Colors.white54 : Colors.black54),
                       onPressed: () => Navigator.pop(context),
                     )
                   ],
@@ -91,7 +94,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
                         child: Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.white10),
+                            border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
                             image: DecorationImage(
                               image: NetworkImage(imageUrl),
                               fit: BoxFit.cover,
@@ -126,144 +129,161 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0F0F0F),
-        elevation: 0,
-        title: const Text('Comments', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          // Comments List
-          Expanded(
-            child: ListenableBuilder(
-              listenable: MockDataService(),
-              builder: (context, child) {
-                final comments = MockDataService().getCommentsForPost(widget.post.id);
-                
-                if (comments.isEmpty) {
-                  return const Center(
-                    child: Text('No comments yet. Be the first to reply!', style: TextStyle(color: Colors.white54)),
-                  );
-                }
-                
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  itemCount: comments.length,
-                  itemBuilder: (context, index) {
-                    final comment = comments[index];
-                    return _buildCommentTile(comment);
-                  },
-                );
-              },
+    return ListenableBuilder(
+      listenable: ThemeService(),
+      builder: (context, _) {
+        final isDark = ThemeService().isDarkMode;
+        return Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : const Color(0xFF1A1D20)),
+              onPressed: () => Navigator.pop(context),
             ),
+            title: Text('Comments', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: isDark ? Colors.white : const Color(0xFF1A1D20))),
+            centerTitle: true,
           ),
-          
-          // Image Preview (if selected)
-          if (_selectedImage != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: const Color(0xFF141414),
-              child: Row(
-                children: [
-                  Stack(
-                    alignment: Alignment.topRight,
+          body: Column(
+            children: [
+              // Comments List
+              Expanded(
+                child: ListenableBuilder(
+                  listenable: MockDataService(),
+                  builder: (context, child) {
+                    final comments = MockDataService().getCommentsForPost(widget.post.id);
+                    
+                    if (comments.isEmpty) {
+                      return Center(
+                        child: Text('No comments yet. Be the first to reply!', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54)),
+                      );
+                    }
+                    
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: comments.length,
+                      itemBuilder: (context, index) {
+                        final comment = comments[index];
+                        return _buildCommentTile(comment, isDark);
+                      },
+                    );
+                  },
+                ),
+              ),
+              
+              // Image Preview (if selected)
+              if (_selectedImage != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  color: isDark ? const Color(0xFF141414) : const Color(0xFFF1F3F5),
+                  child: Row(
                     children: [
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF7C5CFF), width: 1.5),
-                          image: DecorationImage(
-                            image: NetworkImage(_selectedImage!),
-                            fit: BoxFit.cover,
+                      Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFF997DFF), width: 1.5),
+                              image: DecorationImage(
+                                image: NetworkImage(_selectedImage!),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedImage = null;
-                          });
-                        },
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            color: Colors.black87,
-                            shape: BoxShape.circle,
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedImage = null;
+                              });
+                            },
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                color: Colors.black87,
+                                shape: BoxShape.circle,
+                              ),
+                              padding: const EdgeInsets.all(4),
+                              child: const Icon(Icons.close, size: 12, color: Colors.white),
+                            ),
                           ),
-                          padding: const EdgeInsets.all(4),
-                          child: const Icon(Icons.close, size: 12, color: Colors.white),
-                        ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
+                ),
 
-          // Comment Input Field
-          Container(
-            padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 12,
-              bottom: MediaQuery.of(context).padding.bottom > 0 ? MediaQuery.of(context).padding.bottom : 16,
-            ),
-            decoration: const BoxDecoration(
-              color: Color(0xFF141414),
-              border: Border(top: BorderSide(color: Colors.white12, width: 1)),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundImage: NetworkImage(MockDataService().user.avatarUrl),
-                  backgroundColor: Colors.grey[800],
+              // Comment Input Field
+              Container(
+                padding: EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  top: 12,
+                  bottom: MediaQuery.of(context).padding.bottom > 0 ? MediaQuery.of(context).padding.bottom : 16,
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.image_outlined, color: Colors.white70),
-                  onPressed: _openGallery,
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.white10),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF141414) : Colors.white,
+                  border: Border(top: BorderSide(color: isDark ? Colors.white12 : Colors.black12, width: 1)),
+                  boxShadow: isDark ? [] : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
                     ),
-                    child: TextField(
-                      controller: _commentController,
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                      decoration: const InputDecoration(
-                        hintText: 'Add a comment...',
-                        hintStyle: TextStyle(color: Colors.white38),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        isDense: true,
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 18,
+                      backgroundImage: NetworkImage(MockDataService().user.avatarUrl),
+                      backgroundColor: Colors.grey[800],
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: Icon(Icons.image_outlined, color: isDark ? Colors.white70 : Colors.black87),
+                      onPressed: _openGallery,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+                        ),
+                        child: TextField(
+                          controller: _commentController,
+                          style: TextStyle(color: isDark ? Colors.white : const Color(0xFF1A1D20), fontSize: 14),
+                          decoration: InputDecoration(
+                            hintText: 'Add a comment...',
+                            hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            isDense: true,
+                          ),
+                          onSubmitted: (_) => _submitComment(),
+                        ),
                       ),
-                      onSubmitted: (_) => _submitComment(),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.send, color: Color(0xFF997DFF)),
+                      onPressed: _submitComment,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.send, color: Color(0xFF7C5CFF)),
-                  onPressed: _submitComment,
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildCommentTile(Comment comment) {
+  Widget _buildCommentTile(Comment comment, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
@@ -283,19 +303,19 @@ class _CommentsScreenState extends State<CommentsScreen> {
                   children: [
                     Text(
                       comment.username,
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF1A1D20), fontSize: 13),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       _getTimeAgo(comment.createdAt),
-                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                      style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 12),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
                   comment.text,
-                  style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.3),
+                  style: TextStyle(color: isDark ? Colors.white : const Color(0xFF1A1D20), fontSize: 14, height: 1.3),
                 ),
                 if (comment.imageUrl != null) ...[
                   const SizedBox(height: 8),
@@ -304,7 +324,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.white12),
+                      border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: Image.network(
@@ -316,20 +336,20 @@ class _CommentsScreenState extends State<CommentsScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.favorite_border, size: 14, color: Colors.white54),
+                    Icon(Icons.favorite_border, size: 14, color: isDark ? Colors.white54 : Colors.black54),
                     const SizedBox(width: 4),
                     Text(
                       comment.upvotes.toString(),
-                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                      style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 12),
                     ),
                     const SizedBox(width: 16),
-                    const Text('Reply', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text('Reply', style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 12, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ],
             ),
           ),
-          const Icon(Icons.more_vert, size: 16, color: Colors.white38),
+          Icon(Icons.more_vert, size: 16, color: isDark ? Colors.white38 : Colors.black38),
         ],
       ),
     );
