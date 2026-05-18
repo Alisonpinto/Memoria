@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'screens/main_navigation.dart';
 import 'services/theme_service.dart';
+import 'services/notification_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService().init();
+  await NotificationService().requestPermissions();
   runApp(const MemoriaApp());
 }
 

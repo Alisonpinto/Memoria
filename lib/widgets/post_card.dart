@@ -3,7 +3,7 @@ import '../models/post.dart';
 import '../services/mock_data_service.dart';
 import '../screens/comments_screen.dart';
 import '../services/theme_service.dart';
-
+import '../services/notification_service.dart';
 class PostCard extends StatefulWidget {
   final Post post;
 
@@ -314,6 +314,9 @@ class _PostCardState extends State<PostCard> {
                           color: widget.post.isLiked ? const Color(0xFF997DFF) : inactiveColor,
                           count: widget.post.upvotes.toString(),
                           onTap: () {
+                            if (!widget.post.isLiked) {
+                              NotificationService().showLikeNotification();
+                            }
                             MockDataService().toggleLike(widget.post.id);
                           }
                         ),
