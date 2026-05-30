@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/main_navigation.dart';
+import 'screens/splash_screen.dart';
 import 'services/theme_service.dart';
 import 'services/notification_service.dart';
 
@@ -72,7 +73,7 @@ class MemoriaApp extends StatelessWidget {
             ),
             fontFamily: 'Roboto',
           ),
-          home: const MainNavigation(),
+          home: const SplashScreen(),
         );
       },
     );
