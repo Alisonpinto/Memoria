@@ -33,7 +33,7 @@ class SidebarDrawer extends StatelessWidget {
                   onTap: () {
                     Navigator.pop(context); // Close drawer
                     if (onNavigateToBottomNav != null) {
-                      onNavigateToBottomNav!(2); // Profile is index 2
+                      onNavigateToBottomNav!(3); // Profile is index 3
                     } else {
                       Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
                     }
@@ -91,6 +91,15 @@ class SidebarDrawer extends StatelessWidget {
                         },
                       ),
                       _DrawerItem(
+                        icon: Icons.search, 
+                        label: 'Search', 
+                        isActive: currentNavIndex == 1,
+                        onTap: () {
+                          Navigator.pop(context);
+                          onNavigateToBottomNav?.call(1);
+                        },
+                      ),
+                      _DrawerItem(
                         icon: Icons.add_box_outlined, 
                         label: 'Create Post',
                         onTap: () {
@@ -101,19 +110,19 @@ class SidebarDrawer extends StatelessWidget {
                       _DrawerItem(
                         icon: Icons.notifications_none, 
                         label: 'Notifications',
-                        isActive: currentNavIndex == 1,
+                        isActive: currentNavIndex == 2,
                         onTap: () {
                           Navigator.pop(context);
-                          onNavigateToBottomNav?.call(1);
+                          onNavigateToBottomNav?.call(2);
                         },
                       ),
                       _DrawerItem(
                         icon: Icons.person_outline, 
                         label: 'Profile',
-                        isActive: currentNavIndex == 2,
+                        isActive: currentNavIndex == 3,
                         onTap: () {
                           Navigator.pop(context);
-                          onNavigateToBottomNav?.call(2);
+                          onNavigateToBottomNav?.call(3);
                         },
                       ),
                       Divider(color: dividerColor, thickness: 1, height: 24),
@@ -123,7 +132,7 @@ class SidebarDrawer extends StatelessWidget {
                         onTap: () {
                           Navigator.pop(context);
                           if (onNavigateToBottomNav != null) {
-                             onNavigateToBottomNav!(2); 
+                             onNavigateToBottomNav!(3); 
                           }
                         },
                       ),

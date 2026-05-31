@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'home_feed_screen.dart';
-import 'add_post_screen.dart';
 import 'notification_screen.dart';
+import 'search_screen.dart';
 import 'profile_screen.dart';
 import '../widgets/sidebar_drawer.dart';
 import '../services/theme_service.dart';
@@ -22,6 +22,7 @@ class _MainNavigationState extends State<MainNavigation> {
 
   List<Widget> get _screens => [
     const HomeFeedScreen(),
+    const SearchScreen(),
     NotificationScreen(onBack: () => _onItemTapped(0)),
     const ProfileScreen(),
   ];
@@ -129,28 +130,23 @@ class _MainNavigationState extends State<MainNavigation> {
                               onTap: () => _onItemTapped(0),
                             ),
                             _NavBarIcon(
-                              icon: Icons.add,
-                              activeIcon: Icons.add,
-                              isActive: false, // Pushes a new screen, so it doesn't stay active
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const AddPostScreen()),
-                                );
-                              },
+                              icon: Icons.search,
+                              activeIcon: Icons.search,
+                              isActive: _selectedIndex == 1,
+                              onTap: () => _onItemTapped(1),
                             ),
                             _NavBarIcon(
                               icon: Icons.mail_outline, // Inbox
                               activeIcon: Icons.mail,
-                              isActive: _selectedIndex == 1,
+                              isActive: _selectedIndex == 2,
                               hasBadge: true,
-                              onTap: () => _onItemTapped(1),
+                              onTap: () => _onItemTapped(2),
                             ),
                             _NavBarIcon(
                               icon: Icons.person_outline,
                               activeIcon: Icons.person,
-                              isActive: _selectedIndex == 2,
-                              onTap: () => _onItemTapped(2),
+                              isActive: _selectedIndex == 3,
+                              onTap: () => _onItemTapped(3),
                             ),
                           ],
                         ),
